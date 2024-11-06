@@ -25,7 +25,8 @@ class SimpleKeyboardTextField extends LitElement {
 
     constructor() {
         super();
-        this.showVirtualKeyboard = true; // default to true if not set by Java
+        this.showVirtualKeyboard = true; // Default to true if not set by Java
+        this.keyboard = null;
     }
 
     render() {
@@ -55,8 +56,12 @@ class SimpleKeyboardTextField extends LitElement {
                 "{backspace}": "⌫"
             }
         });
+
+        // Add global click listener to hide keyboard when clicking outside
+        document.addEventListener('click', this._onDocumentClick.bind(this));
     }
 
+    // Focus handler to show the keyboard
     _onFocus() {
         const keyboardContainer = this.shadowRoot.getElementById("keyboardContainer");
         if (this.showVirtualKeyboard) {
@@ -65,12 +70,14 @@ class SimpleKeyboardTextField extends LitElement {
         }
     }
 
+    // Input change handler to sync the keyboard input with the field
     _handleKeyboardInput(input) {
         const inputField = this.shadowRoot.getElementById('keyboardInput');
         inputField.value = input;
         this._dispatchValueChange(input);
     }
 
+    // Input field change handler
     _onInputChange(event) {
         const value = event.target.value;
         if (this.showVirtualKeyboard) {
@@ -79,12 +86,43 @@ class SimpleKeyboardTextField extends LitElement {
         this._dispatchValueChange(value);
     }
 
+    // Dispatch value change to parent component
     _dispatchValueChange(value) {
         this.dispatchEvent(new CustomEvent('value-change', {
             detail: { value },
             bubbles: true,
             composed: true
         }));
+    }
+
+    // Global click handler for hiding the keyboard
+    _onDocumentClick(event) {
+        const inputField = this.shadowRoot.getElementById("keyboardInput");
+        const keyboardContainer = this.shadowRoot.getElementById("keyboardContainer");
+        console.log('event.target::',event.target.localName);
+        console.log('inputField::::',inputField)
+        console.log('keyboardContainer::::',keyboardContainer)
+        // Check if the click was not on either the input or keyboard container
+        // if (!inputField.contains(event.target) || !keyboardContainer.contains(event.target)) {
+        //     this._hideKeyboard();
+        // }
+        if (event?.srcElement?.renderOptions?.host?.renderOptions?.host?.localName !== 'simple-keyboard-text-field') {
+            this._hideKeyboard();
+        }
+    }
+
+    // Hide the keyboard
+    _hideKeyboard() {
+        const keyboardContainer = this.shadowRoot.getElementById("keyboardContainer");
+        if (this.showVirtualKeyboard) {
+            keyboardContainer.classList.remove("visible");
+        }
+    }
+
+    // Cleanup the event listener when the element is removed
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        document.removeEventListener('click', this._onDocumentClick);
     }
 }
 
