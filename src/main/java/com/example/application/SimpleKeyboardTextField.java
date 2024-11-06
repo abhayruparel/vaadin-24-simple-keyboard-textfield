@@ -23,24 +23,24 @@ public class SimpleKeyboardTextField extends TextField {
     public boolean isShowVirtualKeyboard() {
         return showVirtualKeyboardDescriptor.get(this);
     }
-
-    // Define a custom event for capturing the value-change event from the client side
-    @DomEvent("value-change")
-    public static class SimpleKeyboardCustomValueChangeEvent extends ComponentEvent<SimpleKeyboardTextField> {
-        private final String value;
-
-        public SimpleKeyboardCustomValueChangeEvent(SimpleKeyboardTextField source, boolean fromClient, @EventData("event.detail.value") String value) {
-            super(source, fromClient);
-            this.value = value;
-        }
-
-        public String getCustomValue() {
-            return value;
-        }
-    }
-
-    // Custom listener method for handling custom value-change events
-    public Registration addCustomValueChangeListener(ComponentEventListener<SimpleKeyboardCustomValueChangeEvent> listener) {
-        return addListener(SimpleKeyboardCustomValueChangeEvent.class, listener);
-    }
+//
+//    // Define a custom event for capturing the value-change event from the client side
+//    @DomEvent("value-change")
+//    public static class SimpleKeyboardCustomValueChangeEvent extends ComponentEvent<SimpleKeyboardTextField> {
+//        private final String value;
+//
+//        public SimpleKeyboardCustomValueChangeEvent(SimpleKeyboardTextField source, boolean fromClient, @EventData("event.detail.value") String value) {
+//            super(source, fromClient);
+//            this.value = value;
+//        }
+//
+//        public String getCustomValue() {
+//            return value;
+//        }
+//    }
+//
+//    // Custom listener method for handling custom value-change events
+//    public Registration addCustomValueChangeListener(ComponentEventListener<SimpleKeyboardCustomValueChangeEvent> listener) {
+//        return addListener(SimpleKeyboardCustomValueChangeEvent.class, listener);
+//    }
 }
