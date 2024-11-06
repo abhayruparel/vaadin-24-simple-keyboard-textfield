@@ -10,7 +10,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 @PageTitle("Hello World")
-@Route("")
+@Route("HelloWorld")
 @Menu(order = 0, icon = "line-awesome/svg/globe-solid.svg")
 public class HelloWorldView extends HorizontalLayout {
 
