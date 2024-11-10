@@ -41,16 +41,13 @@ export class InputWithKeyboard extends LitElement {
       padding: 8px 10px;
       display: none;
       z-index: 1000;
-      left: 0;
-      bottom: 0;
       width: auto;
-      /* Changed from percentage to auto height */
       height: fit-content;
-      /* Added flex-direction for better row alignment */
       flex-direction: column;
-      gap: 4px; /* Consistent spacing between rows */
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-      overflow-y: auto;
+      gap: 4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transition: top 0.3s ease, bottom 0.3s ease;
+      /* Remove default bottom: 0 positioning */
     }
 
     .keyboard-container.visible {
