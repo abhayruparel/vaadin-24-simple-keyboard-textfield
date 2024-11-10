@@ -38,16 +38,19 @@ export class InputWithKeyboard extends LitElement {
       position: fixed;
       background: lightgrey;
       border: 1px solid black;
-      padding: 10px;
+      padding: 8px 10px;
       display: none;
       z-index: 1000;
-      flex-wrap: wrap;
       left: 0;
       bottom: 0;
-      width: 100%;
-      height: 40%;
-      max-height: 500px;
+      width: auto;
+      /* Changed from percentage to auto height */
+      height: fit-content;
+      /* Added flex-direction for better row alignment */
+      flex-direction: column;
+      gap: 4px; /* Consistent spacing between rows */
       box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
     }
 
     .keyboard-container.visible {
@@ -60,16 +63,15 @@ export class InputWithKeyboard extends LitElement {
       margin: 0;
       user-select: none;
       width: 100%;
-      margin-right: 1em;
+      gap: 4px; /* Consistent spacing between keys */
     }
 
     .key {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 2.5em; /* Fixed width for letter keys */
-      height: 3em;
-      margin: 3px;
+      width: 2.5em;
+      height: 2.8em; /* Slightly reduced height */
       padding: 0 10px;
       cursor: pointer;
       background-color: #ffffff;
@@ -78,12 +80,12 @@ export class InputWithKeyboard extends LitElement {
       user-select: none;
       transition: background-color 0.2s;
       font-size: 1rem;
-      flex: 0 0 auto; /* Prevent flex growing */
+      flex: 0 0 auto;
     }
 
     .key.special {
       background-color: #e0e0e0;
-      width: auto; /* Allow special keys to size based on content */
+      width: auto;
       min-width: 4em;
       font-size: 0.9rem;
       flex: 0 0 auto;
@@ -92,7 +94,7 @@ export class InputWithKeyboard extends LitElement {
     .key.space {
       width: auto;
       min-width: 8em;
-      flex: 0 0 8em; /* Fixed width for space */
+      flex: 0 0 8em;
     }
 
     .key:hover {
@@ -104,10 +106,18 @@ export class InputWithKeyboard extends LitElement {
     }
 
     @media (max-width: 600px) {
+      .keyboard-container {
+        padding: 6px 8px;
+        gap: 3px;
+      }
+
+      .keyboard-row {
+        gap: 3px;
+      }
+
       .key {
-        width: 2em; /* Slightly smaller on mobile */
-        height: 2.5em;
-        margin: 2px;
+        width: 2em;
+        height: 2.4em;
         padding: 0 5px;
         font-size: 0.9rem;
       }
@@ -120,20 +130,21 @@ export class InputWithKeyboard extends LitElement {
         min-width: 6em;
         flex: 0 0 6em;
       }
-
-      .keyboard-row {
-        justify-content: center;
-        padding: 0 5px;
-      }
     }
 
     @media (max-width: 412px) {
       .keyboard-container {
-        padding: 5px;
+        padding: 4px 6px;
+        gap: 2px;
+      }
+
+      .keyboard-row {
+        gap: 2px;
       }
 
       .key {
-        width: 1.8em; /* Even smaller on very small screens */
+        width: 1.8em;
+        height: 2.2em;
         font-size: 0.8rem;
         padding: 0 3px;
       }
@@ -185,7 +196,13 @@ export class InputWithKeyboard extends LitElement {
       </div>
     `;
   }
-
+    private updateKeyboardPosition() {
+        if (this.keyboard && this.textField) {
+            const textFieldRect = this.textField.getBoundingClientRect();
+            this.keyboard.style.top = `${textFieldRect.bottom}px`;
+            this.keyboard.style.left = `${textFieldRect.left}px`;
+        }
+    }
   private renderKey(key: string) {
     let label = key;
     let className = 'key';
@@ -297,6 +314,7 @@ export class InputWithKeyboard extends LitElement {
   private showKeyboard() {
     if (!this.isKeyboardVisible) {
       this.isKeyboardVisible = true;
+      this.updateKeyboardPosition();
     }
   }
 
