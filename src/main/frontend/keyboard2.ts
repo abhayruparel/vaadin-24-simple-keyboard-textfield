@@ -30,11 +30,23 @@ export class InputWithKeyboard extends LitElement {
     '{shift} z x c v b n m {backspace}',
     '{numbers} {space} {ent}',
   ];
-
+  setInputStyle(height: string, width: string) {
+    // Check if textField is initialized before accessing its properties
+    if (this.textField && this.textField.inputElement) {
+      const inputElement = this.textField.inputElement as HTMLInputElement;
+      inputElement.style.width = width;
+      inputElement.style.height = height;
+    }
+  }
   static styles = css`
     :host {
       display: block;
       position: relative;
+      width:100%;
+      height: 100%;
+    }
+    vaadin-text-field::part(input-field) {
+      width: 100%; /* Ensure the text field takes full width */
     }
 
     .keyboard-container {
@@ -174,6 +186,18 @@ export class InputWithKeyboard extends LitElement {
       }
     }
   `;
+  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
+    super.firstUpdated(changedProperties);
+
+    // Notify Java code that the text field is ready
+    this.dispatchEvent(
+      new CustomEvent('text-field-ready', {
+        detail: { element: this.textField },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
 
   private documentClickListener = this.handleDocumentClick.bind(this);
   private resizeObserver: ResizeObserver;

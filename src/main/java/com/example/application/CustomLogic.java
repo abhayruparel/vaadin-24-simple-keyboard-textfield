@@ -3,14 +3,19 @@ package com.example.application;
 
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
 @Route("custom")
-public class CustomLogic extends HorizontalLayout {
+public class CustomLogic extends VerticalLayout {
     public CustomLogic() {
-        InputWithKeyboard field1 = new InputWithKeyboard();
-        InputWithKeyboard field2 = new InputWithKeyboard();
-        InputWithKeyboard field3 = new InputWithKeyboard();
+        this.setWidthFull();
+        this.setHeightFull();
+        InputWithKeyboard field1 = new InputWithKeyboard("200px", "200px");
+        InputWithKeyboard field2 = new InputWithKeyboard("100%","100%");
+        InputWithKeyboard field3 = new InputWithKeyboard("100%","100%");
+//        field1.setWidth("100%");
 
         // Add value change listeners to show notifications
         field1.addValueChangeListener(event -> Notification.show("Field 1 Value: " + event.getValue()));
@@ -18,6 +23,6 @@ public class CustomLogic extends HorizontalLayout {
         field3.addValueChangeListener(event -> Notification.show("Field 3 Value: " + event.getValue()));
 
         // Add components to the layout
-        add(field1, field2, field3);
+        this.add(field1, field2, field3);
     }
 }

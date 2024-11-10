@@ -1,6 +1,8 @@
 package com.example.application;
 
 import com.vaadin.flow.component.AbstractField;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 
@@ -8,7 +10,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 @JsModule("./keyboard2.ts")
 public class InputWithKeyboard extends AbstractField<InputWithKeyboard, String> {
 
-    public InputWithKeyboard() {
+    public InputWithKeyboard(String heigth, String width) {
         super("");
 
         // Synchronize the value property
@@ -17,6 +19,12 @@ public class InputWithKeyboard extends AbstractField<InputWithKeyboard, String> 
                     String newValue = event.getValue().toString();
                     setModelValue(newValue, true);
                 });
+
+        // Listen for the text-field-ready event
+        getElement().addEventListener("text-field-ready", e -> {
+            // Retrieve the textField element and call setInputFieldStyle
+            setInputFieldStyle(heigth, width);
+        });
     }
 
     @Override
@@ -53,5 +61,11 @@ public class InputWithKeyboard extends AbstractField<InputWithKeyboard, String> 
     @Override
     public boolean isRequiredIndicatorVisible() {
         return getElement().getProperty("required", false);
+    }
+
+    // Set the input field style
+    private void setInputFieldStyle(String height, String width) {
+        // Call JavaScript method setInputStyle on the custom element
+        getElement().executeJs("this.setInputStyle($0, $1)", height, width);
     }
 }
