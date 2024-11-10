@@ -1,11 +1,11 @@
-import { html, LitElement, css } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import {html, LitElement, css} from 'lit';
+import {customElement, property, query, state} from 'lit/decorators.js';
 import '@vaadin/text-field';
-import { TextField } from '@vaadin/text-field';
+import {TextField} from '@vaadin/text-field';
 
 @customElement('input-with-keyboard')
 export class InputWithKeyboard extends LitElement {
-    @property({ type: String })
+    @property({type: String, reflect: true})
     currentValue = '';
 
     @query('#textField')
@@ -32,7 +32,7 @@ export class InputWithKeyboard extends LitElement {
             z-index: 1000;
             flex-wrap: wrap;
             max-width: 600px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         .keyboard-container.visible {
@@ -73,24 +73,35 @@ export class InputWithKeyboard extends LitElement {
         document.removeEventListener('click', this.documentClickListener);
     }
 
+    updated(changedProperties: Map<string, any>) {
+        super.updated(changedProperties);
+
+        if (changedProperties.has('currentValue')) {
+            if (this.textField && this.textField.value !== this.currentValue) {
+                this.textField.value = this.currentValue;
+            }
+        }
+    }
+
     render() {
         return html`
             <vaadin-text-field
-                id="textField"
-                .value="${this.currentValue}"
-                @input="${this.handleInput}"
-                @focus="${this.showKeyboard}"
+                    id="textField"
+                    .value="${this.currentValue}"
+                    @input="${this.handleInput}"
+                    @focus="${this.showKeyboard}"
             ></vaadin-text-field>
             <div id="keyboard" class="keyboard-container ${this.isKeyboardVisible ? 'visible' : ''}">
                 ${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => html`
                     <div
-                        class="key"
-                        @mousedown="${(e: MouseEvent) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            this.addCharacter(letter);
-                        }}"
-                    >${letter}</div>
+                            class="key"
+                            @mousedown="${(e: MouseEvent) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.addCharacter(letter);
+                            }}"
+                    >${letter}
+                    </div>
                 `)}
             </div>
         `;
@@ -105,29 +116,31 @@ export class InputWithKeyboard extends LitElement {
     private updateValue(newValue: string) {
         this.currentValue = newValue;
         this.dispatchEvent(new CustomEvent('value-changed', {
-            detail: { value: this.currentValue },
+            detail: {value: this.currentValue},
             bubbles: true,
             composed: true
         }));
     }
 
+    private getCursorPosition(): number {
+        const input = this.textField.inputElement as HTMLInputElement;
+        return input?.selectionStart ?? this.currentValue.length;
+    }
+
+    private setCursorPosition(position: number) {
+        const input = this.textField.inputElement as HTMLInputElement;
+        if (input) {
+            requestAnimationFrame(() => {
+                input.setSelectionRange(position, position);
+            });
+        }
+    }
+
     private addCharacter(character: string) {
-        // Get the current cursor position
-        const cursorPos = this.textField.inputElement?.selectionStart ?? this.currentValue.length;
-
-        // Insert the character at the cursor position
+        const cursorPos = this.getCursorPosition();
         const newValue = this.currentValue.slice(0, cursorPos) + character + this.currentValue.slice(cursorPos);
-
         this.updateValue(newValue);
-
-        // Update the text field value and cursor position
-        this.textField.value = newValue;
-
-        // Set the cursor position after the inserted character
-        requestAnimationFrame(() => {
-            const newPos = cursorPos + 1;
-            this.textField.inputElement?.setSelectionRange(newPos, newPos);
-        });
+        this.setCursorPosition(cursorPos + 1);
     }
 
     private showKeyboard() {
