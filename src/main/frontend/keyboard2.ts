@@ -20,6 +20,9 @@ export class InputWithKeyboard extends LitElement {
   @state()
   private showNumbers = false;
 
+  @state()
+  private keyboardPosition: 'top' | 'bottom' = 'bottom';
+
   private default = [
     '1 2 3 4 5 6 7 8 9 0',
     'q w e r t y u i o p',
@@ -46,21 +49,33 @@ export class InputWithKeyboard extends LitElement {
       flex-direction: column;
       gap: 4px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      transition: top 0.3s ease, bottom 0.3s ease;
-      /* Remove default bottom: 0 positioning */
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
     }
 
     .keyboard-container.visible {
       display: flex;
+      opacity: 1;
+      transform: translateY(0);
     }
 
+    .keyboard-container.position-top {
+      transform-origin: bottom center;
+    }
+
+    .keyboard-container.position-bottom {
+      transform-origin: top center;
+    }
+
+    /* Rest of the existing styles remain the same */
     .keyboard-row {
       display: flex;
       justify-content: center;
       margin: 0;
       user-select: none;
       width: 100%;
-      gap: 4px; /* Consistent spacing between keys */
+      gap: 4px;
     }
 
     .key {
@@ -68,7 +83,7 @@ export class InputWithKeyboard extends LitElement {
       align-items: center;
       justify-content: center;
       width: 2.5em;
-      height: 2.8em; /* Slightly reduced height */
+      height: 2.8em;
       padding: 0 10px;
       cursor: pointer;
       background-color: #ffffff;
@@ -104,6 +119,9 @@ export class InputWithKeyboard extends LitElement {
 
     @media (max-width: 600px) {
       .keyboard-container {
+        width: 100%;
+        left: 0 !important;
+        right: 0 !important;
         padding: 6px 8px;
         gap: 3px;
       }
@@ -158,25 +176,33 @@ export class InputWithKeyboard extends LitElement {
   `;
 
   private documentClickListener = this.handleDocumentClick.bind(this);
+  private resizeObserver: ResizeObserver;
+
+  constructor() {
+    super();
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.isKeyboardVisible) {
+        this.updateKeyboardPosition();
+      }
+    });
+  }
 
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('click', this.documentClickListener);
+    window.addEventListener('scroll', this.updateKeyboardPosition.bind(this), true);
+    window.addEventListener('resize', this.updateKeyboardPosition.bind(this));
+    if (this.keyboard) {
+      this.resizeObserver.observe(this.keyboard);
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('click', this.documentClickListener);
-  }
-
-  updated(changedProperties: Map<string, any>) {
-    super.updated(changedProperties);
-
-    if (changedProperties.has('currentValue')) {
-      if (this.textField && this.textField.value !== this.currentValue) {
-        this.textField.value = this.currentValue;
-      }
-    }
+    window.removeEventListener('scroll', this.updateKeyboardPosition.bind(this));
+    window.removeEventListener('resize', this.updateKeyboardPosition.bind(this));
+    this.resizeObserver.disconnect();
   }
 
   render() {
@@ -193,13 +219,68 @@ export class InputWithKeyboard extends LitElement {
       </div>
     `;
   }
-    private updateKeyboardPosition() {
-        if (this.keyboard && this.textField) {
-            const textFieldRect = this.textField.getBoundingClientRect();
-            this.keyboard.style.top = `${textFieldRect.bottom}px`;
-            this.keyboard.style.left = `${textFieldRect.left}px`;
-        }
+
+  private updateKeyboardPosition() {
+    if (!this.keyboard || !this.textField || !this.isKeyboardVisible) return;
+
+    const textFieldRect = this.textField.getBoundingClientRect();
+    const keyboardHeight = this.keyboard.offsetHeight;
+    const windowHeight = window.innerHeight;
+    const spaceBelow = windowHeight - textFieldRect.bottom;
+    const spaceAbove = textFieldRect.top;
+
+    // Calculate available space for keyboard
+    const minSpaceNeeded = 200; // Minimum space needed for keyboard
+    const hasSpaceBelow = spaceBelow >= minSpaceNeeded;
+    const hasSpaceAbove = spaceAbove >= minSpaceNeeded;
+
+    // Determine position based on available space
+    if (hasSpaceBelow) {
+      this.keyboardPosition = 'bottom';
+      this.keyboard.style.top = `${textFieldRect.bottom}px`;
+      this.keyboard.style.bottom = 'auto';
+    } else if (hasSpaceAbove) {
+      this.keyboardPosition = 'top';
+      this.keyboard.style.bottom = `${windowHeight - textFieldRect.top}px`;
+      this.keyboard.style.top = 'auto';
+    } else {
+      // If there's not enough space above or below, position at bottom of viewport
+      this.keyboardPosition = 'bottom';
+      this.keyboard.style.bottom = '0';
+      this.keyboard.style.top = 'auto';
     }
+
+    // Handle horizontal positioning
+    if (window.innerWidth <= 600) {
+      // On mobile, keyboard spans full width
+      this.keyboard.style.left = '0';
+      this.keyboard.style.right = '0';
+    } else {
+      // On desktop, align with text field
+      const keyboardWidth = this.keyboard.offsetWidth;
+      let left = textFieldRect.left;
+
+      // Prevent keyboard from extending past right edge
+      if (left + keyboardWidth > window.innerWidth) {
+        left = window.innerWidth - keyboardWidth - 10;
+      }
+
+      // Prevent keyboard from extending past left edge
+      left = Math.max(10, left);
+
+      this.keyboard.style.left = `${left}px`;
+    }
+
+    // Ensure keyboard is visible within viewport
+    requestAnimationFrame(() => {
+      const keyboardRect = this.keyboard.getBoundingClientRect();
+      if (keyboardRect.bottom > windowHeight) {
+        this.keyboard.style.bottom = '0';
+        this.keyboard.style.top = 'auto';
+      }
+    });
+  }
+
   private renderKey(key: string) {
     let label = key;
     let className = 'key';
@@ -216,7 +297,7 @@ export class InputWithKeyboard extends LitElement {
         className += ' space';
         handler = () => this.addCharacter(' ');
         break;
-        case '{shift}':
+      case '{shift}':
         label = '⇧';
         // className +=' ';
         handler = () => {};
@@ -311,7 +392,9 @@ export class InputWithKeyboard extends LitElement {
   private showKeyboard() {
     if (!this.isKeyboardVisible) {
       this.isKeyboardVisible = true;
-      this.updateKeyboardPosition();
+      requestAnimationFrame(() => {
+        this.updateKeyboardPosition();
+      });
     }
   }
 
