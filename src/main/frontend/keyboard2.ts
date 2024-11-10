@@ -31,7 +31,9 @@ export class InputWithKeyboard extends LitElement {
             display: none;
             z-index: 1000;
             flex-wrap: wrap;
-            max-width: 600px;
+            left: 0;
+            bottom: 0;
+            width: 100vw;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
@@ -146,17 +148,17 @@ export class InputWithKeyboard extends LitElement {
     private showKeyboard() {
         if (!this.isKeyboardVisible) {
             this.isKeyboardVisible = true;
-            this.updateKeyboardPosition();
+            // this.updateKeyboardPosition();
         }
     }
-
-    private updateKeyboardPosition() {
-        if (this.keyboard && this.textField) {
-            const textFieldRect = this.textField.getBoundingClientRect();
-            this.keyboard.style.top = `${textFieldRect.bottom + 5}px`;
-            this.keyboard.style.left = `${textFieldRect.left}px`;
-        }
-    }
+    // removed dynamic positioning as I want to mimic bottom keyboard same as in phones
+    // private updateKeyboardPosition() {
+    //     if (this.keyboard && this.textField) {
+    //         const textFieldRect = this.textField.getBoundingClientRect();
+    //         this.keyboard.style.top = `${textFieldRect.bottom + 5}px`;
+    //         this.keyboard.style.left = `${textFieldRect.left}px`;
+    //     }
+    // }
 
     private handleDocumentClick(event: MouseEvent) {
         if (!this.isKeyboardVisible) return;
