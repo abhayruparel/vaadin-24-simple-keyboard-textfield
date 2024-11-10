@@ -78,6 +78,7 @@ export class InputWithKeyboard extends LitElement {
             <vaadin-text-field
                 id="textField"
                 .value="${this.currentValue}"
+                @input="${this.handleInput}"
                 @focus="${this.showKeyboard}"
             ></vaadin-text-field>
             <div id="keyboard" class="keyboard-container ${this.isKeyboardVisible ? 'visible' : ''}">
@@ -95,14 +96,38 @@ export class InputWithKeyboard extends LitElement {
         `;
     }
 
-    private addCharacter(character: string) {
-        this.currentValue += character;
-        this.textField.value = this.currentValue;
+    private handleInput(e: Event) {
+        const target = e.target as TextField;
+        const newValue = target.value;
+        this.updateValue(newValue);
+    }
+
+    private updateValue(newValue: string) {
+        this.currentValue = newValue;
         this.dispatchEvent(new CustomEvent('value-changed', {
             detail: { value: this.currentValue },
             bubbles: true,
             composed: true
         }));
+    }
+
+    private addCharacter(character: string) {
+        // Get the current cursor position
+        const cursorPos = this.textField.inputElement?.selectionStart ?? this.currentValue.length;
+
+        // Insert the character at the cursor position
+        const newValue = this.currentValue.slice(0, cursorPos) + character + this.currentValue.slice(cursorPos);
+
+        this.updateValue(newValue);
+
+        // Update the text field value and cursor position
+        this.textField.value = newValue;
+
+        // Set the cursor position after the inserted character
+        requestAnimationFrame(() => {
+            const newPos = cursorPos + 1;
+            this.textField.inputElement?.setSelectionRange(newPos, newPos);
+        });
     }
 
     private showKeyboard() {
@@ -121,14 +146,12 @@ export class InputWithKeyboard extends LitElement {
     }
 
     private handleDocumentClick(event: MouseEvent) {
-        // Don't process if keyboard isn't visible
         if (!this.isKeyboardVisible) return;
 
         const path = event.composedPath();
         const isKeyboardClick = path.includes(this.keyboard);
         const isTextFieldClick = path.includes(this.textField);
 
-        // Only hide if click is outside both keyboard and text field
         if (!isKeyboardClick && !isTextFieldClick) {
             this.isKeyboardVisible = false;
         }
