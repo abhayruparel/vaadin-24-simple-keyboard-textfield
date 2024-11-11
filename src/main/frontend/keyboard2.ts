@@ -1,15 +1,13 @@
 import { html, LitElement, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import '@vaadin/text-field';
-import { TextField } from '@vaadin/text-field';
 
 @customElement('input-with-keyboard')
 export class InputWithKeyboard extends LitElement {
   @property({ type: String, reflect: true })
   currentValue = '';
 
-  @query('#textField')
-  private textField!: TextField;
+  @query('#inputField')
+  private inputField!: HTMLInputElement;
 
   @query('#keyboard')
   private keyboard!: HTMLDivElement;
@@ -30,23 +28,26 @@ export class InputWithKeyboard extends LitElement {
     '{shift} z x c v b n m {backspace}',
     '{numbers} {space} {ent}',
   ];
+
   setInputStyle(height: string, width: string) {
-    // Check if textField is initialized before accessing its properties
-    if (this.textField && this.textField.inputElement) {
-      const inputElement = this.textField.inputElement as HTMLInputElement;
-      inputElement.style.width = width;
-      inputElement.style.height = height;
+    if (this.inputField) {
+      this.inputField.style.width = width;
+      this.inputField.style.height = height;
     }
   }
+
   static styles = css`
     :host {
       display: block;
       position: relative;
-      width:100%;
+      width: 100%;
       height: 100%;
     }
-    vaadin-text-field::part(input-field) {
-      width: 100%; /* Ensure the text field takes full width */
+
+    input {
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
     }
 
     .keyboard-container {
@@ -80,7 +81,6 @@ export class InputWithKeyboard extends LitElement {
       transform-origin: top center;
     }
 
-    /* Rest of the existing styles remain the same */
     .keyboard-row {
       display: flex;
       justify-content: center;
@@ -186,13 +186,14 @@ export class InputWithKeyboard extends LitElement {
       }
     }
   `;
+
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
 
-    // Notify Java code that the text field is ready
+    // Notify Java code that the inputField is ready
     this.dispatchEvent(
-      new CustomEvent('text-field-ready', {
-        detail: { element: this.textField },
+      new CustomEvent('input-field-ready', {
+        detail: { element: this.inputField },
         bubbles: true,
         composed: true,
       })
@@ -231,27 +232,33 @@ export class InputWithKeyboard extends LitElement {
 
   render() {
     return html`
-      <vaadin-text-field
-        id="textField"
+      <input
+        id="inputField"
         .value="${this.currentValue}"
         @input="${this.handleInput}"
-        @focus="${this.showKeyboard}"></vaadin-text-field>
+        @focus="${this.showKeyboard}" />
       <div id="keyboard" class="keyboard-container ${this.isKeyboardVisible ? 'visible' : ''}">
         ${this.default.map(
-          (row) => html` <div class="keyboard-row">${row.split(' ').map((key) => this.renderKey(key))}</div> `
+          (row) => html`<div class="keyboard-row">${row.split(' ').map((key) => this.renderKey(key))}</div>`
         )}
       </div>
     `;
   }
 
-  private updateKeyboardPosition() {
-    if (!this.keyboard || !this.textField || !this.isKeyboardVisible) return;
+  private handleInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const newValue = target.value;
+    this.updateValue(newValue);
+  }
 
-    const textFieldRect = this.textField.getBoundingClientRect();
+  private updateKeyboardPosition() {
+    if (!this.keyboard || !this.inputField || !this.isKeyboardVisible) return;
+
+    const inputFieldRect = this.inputField.getBoundingClientRect();
     const keyboardHeight = this.keyboard.offsetHeight;
     const windowHeight = window.innerHeight;
-    const spaceBelow = windowHeight - textFieldRect.bottom;
-    const spaceAbove = textFieldRect.top;
+    const spaceBelow = windowHeight - inputFieldRect.bottom;
+    const spaceAbove = inputFieldRect.top;
 
     // Calculate available space for keyboard
     const minSpaceNeeded = 200; // Minimum space needed for keyboard
@@ -261,11 +268,11 @@ export class InputWithKeyboard extends LitElement {
     // Determine position based on available space
     if (hasSpaceBelow) {
       this.keyboardPosition = 'bottom';
-      this.keyboard.style.top = `${textFieldRect.bottom}px`;
+      this.keyboard.style.top = `${inputFieldRect.bottom}px`;
       this.keyboard.style.bottom = 'auto';
     } else if (hasSpaceAbove) {
       this.keyboardPosition = 'top';
-      this.keyboard.style.bottom = `${windowHeight - textFieldRect.top}px`;
+      this.keyboard.style.bottom = `${windowHeight - inputFieldRect.top}px`;
       this.keyboard.style.top = 'auto';
     } else {
       // If there's not enough space above or below, position at bottom of viewport
@@ -280,11 +287,10 @@ export class InputWithKeyboard extends LitElement {
       this.keyboard.style.left = '0';
       this.keyboard.style.right = '0';
     } else {
-      // On desktop, align with text field
+      // On desktop, align with input field
       const keyboardWidth = this.keyboard.offsetWidth;
-      let left = textFieldRect.left;
+      let left = inputFieldRect.left;
 
-      // Prevent keyboard from extending past right edge
       if (left + keyboardWidth > window.innerWidth) {
         left = window.innerWidth - keyboardWidth - 10;
       }
@@ -323,7 +329,6 @@ export class InputWithKeyboard extends LitElement {
         break;
       case '{shift}':
         label = '⇧';
-        // className +=' ';
         handler = () => {};
         break;
       case '{ent}':
@@ -375,12 +380,6 @@ export class InputWithKeyboard extends LitElement {
     this.isKeyboardVisible = false;
   };
 
-  private handleInput(e: Event) {
-    const target = e.target as TextField;
-    const newValue = target.value;
-    this.updateValue(newValue);
-  }
-
   private updateValue(newValue: string) {
     this.currentValue = newValue;
     this.dispatchEvent(
@@ -393,15 +392,13 @@ export class InputWithKeyboard extends LitElement {
   }
 
   private getCursorPosition(): number {
-    const input = this.textField.inputElement as HTMLInputElement;
-    return input?.selectionStart ?? this.currentValue.length;
+    return this.inputField?.selectionStart ?? this.currentValue.length;
   }
 
   private setCursorPosition(position: number) {
-    const input = this.textField.inputElement as HTMLInputElement;
-    if (input) {
+    if (this.inputField) {
       requestAnimationFrame(() => {
-        input.setSelectionRange(position, position);
+        this.inputField.setSelectionRange(position, position);
       });
     }
   }
@@ -427,7 +424,7 @@ export class InputWithKeyboard extends LitElement {
 
     const path = event.composedPath();
     const isKeyboardClick = path.includes(this.keyboard);
-    const isTextFieldClick = path.includes(this.textField);
+    const isTextFieldClick = path.includes(this.inputField);
 
     if (!isKeyboardClick && !isTextFieldClick) {
       this.isKeyboardVisible = false;
