@@ -21,6 +21,9 @@ export class InputWithKeyboard extends LitElement {
   @state()
   private keyboardPosition: 'top' | 'bottom' = 'bottom';
 
+  @state()
+  private shiftActive = false;
+
   private default = [
     '1 2 3 4 5 6 7 8 9 0',
     'q w e r t y u i o p',
@@ -232,11 +235,7 @@ export class InputWithKeyboard extends LitElement {
 
   render() {
     return html`
-      <input
-        id="inputField"
-        .value="${this.currentValue}"
-        @input="${this.handleInput}"
-        @focus="${this.showKeyboard}" />
+      <input id="inputField" .value="${this.currentValue}" @input="${this.handleInput}" @focus="${this.showKeyboard}" />
       <div id="keyboard" class="keyboard-container ${this.isKeyboardVisible ? 'visible' : ''}">
         ${this.default.map(
           (row) => html`<div class="keyboard-row">${row.split(' ').map((key) => this.renderKey(key))}</div>`
@@ -310,11 +309,14 @@ export class InputWithKeyboard extends LitElement {
       }
     });
   }
+  private toggleShift = () => {
+    this.shiftActive = !this.shiftActive;
+  };
 
   private renderKey(key: string) {
-    let label = key;
+    let label = this.shiftActive ? key.toUpperCase() : key;
     let className = 'key';
-    let handler = () => this.addCharacter(key);
+    let handler = () => this.addCharacter(label);
 
     switch (key) {
       case '{backspace}':
@@ -329,7 +331,8 @@ export class InputWithKeyboard extends LitElement {
         break;
       case '{shift}':
         label = '⇧';
-        handler = () => {};
+        className += ' special';
+        handler = this.toggleShift;
         break;
       case '{ent}':
         label = 'enter';
@@ -408,6 +411,11 @@ export class InputWithKeyboard extends LitElement {
     const newValue = this.currentValue.slice(0, cursorPos) + character + this.currentValue.slice(cursorPos);
     this.updateValue(newValue);
     this.setCursorPosition(cursorPos + 1);
+
+    // Reset shift if it’s a single-use shift
+    if (this.shiftActive) {
+      this.shiftActive = false;
+    }
   }
 
   private showKeyboard() {
