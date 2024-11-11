@@ -32,6 +32,13 @@ export class InputWithKeyboard extends LitElement {
     '{numbers} {space} {ent}',
   ];
 
+  private numbersLayout = [
+    '1 2 3',
+    '4 5 6',
+    '7 8 9',
+    '{abc} 0 {backspace}',
+  ];  
+
   setInputStyle(height: string, width: string) {
     if (this.inputField) {
       this.inputField.style.width = width;
@@ -234,15 +241,21 @@ export class InputWithKeyboard extends LitElement {
   }
 
   render() {
+    const layout = this.showNumbers ? this.numbersLayout : this.default;
     return html`
-      <input id="inputField" .value="${this.currentValue}" @input="${this.handleInput}" @focus="${this.showKeyboard}" />
+      <input
+        id="inputField"
+        .value="${this.currentValue}"
+        @input="${this.handleInput}"
+        @focus="${this.showKeyboard}" />
       <div id="keyboard" class="keyboard-container ${this.isKeyboardVisible ? 'visible' : ''}">
-        ${this.default.map(
+        ${layout.map(
           (row) => html`<div class="keyboard-row">${row.split(' ').map((key) => this.renderKey(key))}</div>`
         )}
       </div>
     `;
   }
+  
 
   private handleInput(e: Event) {
     const target = e.target as HTMLInputElement;
@@ -314,10 +327,10 @@ export class InputWithKeyboard extends LitElement {
   };
 
   private renderKey(key: string) {
-    let label = this.shiftActive ? key.toUpperCase() : key;
+    let label = key;
     let className = 'key';
-    let handler = () => this.addCharacter(label);
-
+    let handler = () => this.addCharacter(key);
+d   
     switch (key) {
       case '{backspace}':
         label = '⌫';
@@ -331,7 +344,6 @@ export class InputWithKeyboard extends LitElement {
         break;
       case '{shift}':
         label = '⇧';
-        className += ' special';
         handler = this.toggleShift;
         break;
       case '{ent}':
@@ -350,7 +362,7 @@ export class InputWithKeyboard extends LitElement {
         handler = () => (this.showNumbers = false);
         break;
     }
-
+  
     return html`
       <div
         class="${className}"
@@ -363,6 +375,7 @@ export class InputWithKeyboard extends LitElement {
       </div>
     `;
   }
+  
 
   private handleBackspace = () => {
     const cursorPos = this.getCursorPosition();
