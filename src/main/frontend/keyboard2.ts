@@ -330,7 +330,7 @@ export class InputWithKeyboard extends LitElement {
     let label = key;
     let className = 'key';
     let handler = () => this.addCharacter(key);
-d   
+   
     switch (key) {
       case '{backspace}':
         label = '⌫';
