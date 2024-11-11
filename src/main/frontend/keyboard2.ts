@@ -24,20 +24,18 @@ export class InputWithKeyboard extends LitElement {
   @state()
   private shiftActive = false;
 
+  @state()
+  private capsLockActive = false;
+
   private default = [
     '1 2 3 4 5 6 7 8 9 0',
     'q w e r t y u i o p',
-    'a s d f g h j k l',
-    '{shift} z x c v b n m {backspace}',
+    '{shift} a s d f g h j k l',
+    '{capslock} z x c v b n m {backspace}',
     '{numbers} {space} {ent}',
-  ];
-
-  private numbersLayout = [
-    '1 2 3',
-    '4 5 6',
-    '7 8 9',
-    '{abc} 0 {backspace}',
   ];  
+
+  private numbersLayout = ['1 2 3', '4 5 6', '7 8 9', '{abc} 0 {backspace}'];
 
   setInputStyle(height: string, width: string) {
     if (this.inputField) {
@@ -243,11 +241,7 @@ export class InputWithKeyboard extends LitElement {
   render() {
     const layout = this.showNumbers ? this.numbersLayout : this.default;
     return html`
-      <input
-        id="inputField"
-        .value="${this.currentValue}"
-        @input="${this.handleInput}"
-        @focus="${this.showKeyboard}" />
+      <input id="inputField" .value="${this.currentValue}" @input="${this.handleInput}" @focus="${this.showKeyboard}" />
       <div id="keyboard" class="keyboard-container ${this.isKeyboardVisible ? 'visible' : ''}">
         ${layout.map(
           (row) => html`<div class="keyboard-row">${row.split(' ').map((key) => this.renderKey(key))}</div>`
@@ -255,7 +249,6 @@ export class InputWithKeyboard extends LitElement {
       </div>
     `;
   }
-  
 
   private handleInput(e: Event) {
     const target = e.target as HTMLInputElement;
@@ -315,22 +308,27 @@ export class InputWithKeyboard extends LitElement {
 
     // Ensure keyboard is visible within viewport
     // requestAnimationFrame(() => {
-      const keyboardRect = this.keyboard.getBoundingClientRect();
-      if (keyboardRect.bottom > windowHeight) {
-        this.keyboard.style.bottom = '0';
-        this.keyboard.style.top = 'auto';
-      }
+    const keyboardRect = this.keyboard.getBoundingClientRect();
+    if (keyboardRect.bottom > windowHeight) {
+      this.keyboard.style.bottom = '0';
+      this.keyboard.style.top = 'auto';
+    }
     // });
   }
   private toggleShift = () => {
     this.shiftActive = !this.shiftActive;
   };
 
+  private toggleCapsLock = () => {
+    this.capsLockActive = !this.capsLockActive;
+  };
+  
+  
   private renderKey(key: string) {
     let label = key;
     let className = 'key';
     let handler = () => this.addCharacter(key);
-   
+  
     switch (key) {
       case '{backspace}':
         label = '⌫';
@@ -361,6 +359,18 @@ export class InputWithKeyboard extends LitElement {
         className += ' special';
         handler = () => (this.showNumbers = false);
         break;
+      case '{capslock}':
+        label = 'CAPS LOCK';
+        className += ' special';
+        handler = this.toggleCapsLock;
+        break;
+      default:
+        // If it's a letter or number, modify it based on shift or caps lock
+        if (this.capsLockActive || this.shiftActive) {
+          if (key.length === 1) {
+            label = key.toUpperCase(); // Uppercase if Caps Lock or Shift is active
+          }
+        }
     }
   
     return html`
@@ -420,16 +430,19 @@ export class InputWithKeyboard extends LitElement {
   }
 
   private addCharacter(character: string) {
+    if (character.length === 1) {
+      const shouldConvertToUpperCase = this.capsLockActive || this.shiftActive;
+      character = shouldConvertToUpperCase ? character.toUpperCase() : character.toLowerCase();
+    }
+  
     const cursorPos = this.getCursorPosition();
     const newValue = this.currentValue.slice(0, cursorPos) + character + this.currentValue.slice(cursorPos);
     this.updateValue(newValue);
     this.setCursorPosition(cursorPos + 1);
-
-    // Reset shift if it’s a single-use shift
     if (this.shiftActive) {
       this.shiftActive = false;
     }
-  }
+  }  
 
   private showKeyboard() {
     if (!this.isKeyboardVisible) {
