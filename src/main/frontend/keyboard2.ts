@@ -301,13 +301,13 @@ export class InputWithKeyboard extends LitElement {
     }
 
     // Ensure keyboard is visible within viewport
-    requestAnimationFrame(() => {
+    // requestAnimationFrame(() => {
       const keyboardRect = this.keyboard.getBoundingClientRect();
       if (keyboardRect.bottom > windowHeight) {
         this.keyboard.style.bottom = '0';
         this.keyboard.style.top = 'auto';
       }
-    });
+    // });
   }
   private toggleShift = () => {
     this.shiftActive = !this.shiftActive;
