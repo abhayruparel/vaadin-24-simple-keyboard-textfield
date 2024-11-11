@@ -12,13 +12,11 @@ public class CustomLogic extends VerticalLayout {
         InputWithKeyboard field1 = new InputWithKeyboard("200px", "200px");
         InputWithKeyboard field2 = new InputWithKeyboard("100%", "100%");
         InputWithKeyboard field3 = new InputWithKeyboard("100%", "100%");
-
-        // Add value change listeners to show notifications
+        InputWithKeyboard field4 = new InputWithKeyboard("100%", "100%");
         field1.addValueChangeListener(event -> Notification.show("Field 1 Value: " + event.getValue()));
         field2.addValueChangeListener(event -> Notification.show("Field 2 Value: " + event.getValue()));
         field3.addValueChangeListener(event -> Notification.show("Field 3 Value: " + event.getValue()));
         field3.setValue("9");
-        // Add components to the layout
-        this.add(field1, field2, field3);
+        this.add(field1, field2, field3, field4);
     }
 }
