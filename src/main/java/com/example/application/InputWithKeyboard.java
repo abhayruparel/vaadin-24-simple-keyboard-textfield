@@ -1,8 +1,6 @@
 package com.example.application;
 
 import com.vaadin.flow.component.AbstractField;
-import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 
@@ -30,6 +28,9 @@ public class InputWithKeyboard extends AbstractField<InputWithKeyboard, String> 
             // Retrieve the textField element and call setInputFieldStyle (if needed)
             setInputFieldStyle(height, width);
         });
+    }
+    public InputWithKeyboard() {
+        this("100%", "100%");
     }
 
     @Override

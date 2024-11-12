@@ -6,8 +6,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
 @Route("custom")
-public class CustomLogic extends VerticalLayout {
-    public CustomLogic() {
+public class VerticalLayoutExample extends VerticalLayout {
+    public VerticalLayoutExample() {
         this.setWidthFull();
         this.setHeightFull();
         InputWithKeyboard field1 = new InputWithKeyboard("200px", "200px");
