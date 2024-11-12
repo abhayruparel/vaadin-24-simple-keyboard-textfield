@@ -18,12 +18,10 @@
     "construct-style-sheets-polyfill": "3.1.0",
     "date-fns": "2.29.3",
     "lit": "3.2.1",
-    "no-name": "file:",
     "proj4": "2.12.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "6.26.2",
-    "simple-keyboard": "3.3.27"
+    "react-router-dom": "6.26.2"
   },
   "devDependencies": {
     "@babel/preset-react": "7.25.7",
@@ -66,8 +64,7 @@
       "proj4": "2.12.1",
       "react": "18.3.1",
       "react-dom": "18.3.1",
-      "react-router-dom": "6.26.2",
-      "simple-keyboard": "3.3.27"
+      "react-router-dom": "6.26.2"
     },
     "devDependencies": {
       "@babel/preset-react": "7.25.7",
@@ -90,7 +87,7 @@
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0"
     },
-    "hash": "b7ff605eb6182ff9959264f828f8b3279180be52535a2703fac1a56c5d34aa70"
+    "hash": "48d11af6ae74fc828b3d98e22c4bd0b4c0ea61c5d72081964d86a605be6e1381"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -111,7 +108,6 @@
     "proj4": "$proj4",
     "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
     "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
-    "@vaadin/vaadin-material-styles": "$@vaadin/vaadin-material-styles",
-    "simple-keyboard": "$simple-keyboard"
+    "@vaadin/vaadin-material-styles": "$@vaadin/vaadin-material-styles"
   }
 }
