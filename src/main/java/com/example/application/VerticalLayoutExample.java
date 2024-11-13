@@ -11,6 +11,8 @@ public class VerticalLayoutExample extends VerticalLayout {
         this.setWidthFull();
         this.setHeightFull();
         InputWithKeyboard field1 = new InputWithKeyboard("200px", "200px");
+        field1.setInputType("number");
+        // field1.setReadOnly(true);
         InputWithKeyboard field2 = new InputWithKeyboard("100%", "100%");
         InputWithKeyboard field3 = new InputWithKeyboard("100%", "100%");
         InputWithKeyboard field4 = new InputWithKeyboard("100%", "100%");

@@ -18,11 +18,6 @@ public class InputWithKeyboard extends AbstractField<InputWithKeyboard, String> 
                     setModelValue(newValue, true); // Update the model value
                 });
 
-        // Listen for the "value-changed" event to update the model value
-        getElement().addEventListener("value-changed", e -> {
-            // No additional actions required here since the property change listener already handles value sync
-        });
-
         // Listen for the "text-field-ready" event, if needed, to handle initialization
         getElement().addEventListener("input-field-ready", e -> {
             // Retrieve the textField element and call setInputFieldStyle (if needed)
@@ -75,8 +70,11 @@ public class InputWithKeyboard extends AbstractField<InputWithKeyboard, String> 
         getElement().executeJs("this.setInputStyle($0, $1)", height, width);
     }
 
-    // You may also want to expose a setter to dynamically change height and width from Java side
     public void setInputStyle(String height, String width) {
         setInputFieldStyle(height, width);
+    }
+
+    public void setInputType(String type) {
+        getElement().setProperty("inputType", type);
     }
 }
