@@ -86,12 +86,12 @@ static styles = css`
 }
 customElements.define("lit-example", LitTemplateExample);
 ```
-Usage
+## Usage
 Clone this Project: Clone this repository and perform a clean install to update your Maven cache.
 
 Use the Component: Now you can use the input-with-keyboard tag in your Lit template or use the InputWithKeyboard Java class.
 
-To-Do
+### To-Do
 Publish to Maven: Once the package is published to Maven Central, you can add it to your pom.xml or build.gradle and start using it.
 
 Feel free to ask if you need further assistance! 😃
